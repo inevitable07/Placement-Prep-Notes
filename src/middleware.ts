@@ -7,10 +7,13 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
 // Define matchers for protected routes
-// Protected: /dashboard and /api routes (except for clerk webhook endpoint)
 const isProtectedRoute = createRouteMatcher([
   "/dashboard(.*)",
-  "/api/(?!webhooks/clerk)(.*)",
+  "/api/(.*)",
+]);
+
+const isWebhookRoute = createRouteMatcher([
+  "/api/webhooks/clerk(.*)",
 ]);
 
 export default clerkMiddleware((auth, req) => {
@@ -21,7 +24,7 @@ export default clerkMiddleware((auth, req) => {
   console.log("[Middleware] Path:", req.nextUrl.pathname, "| Auth:", isAuthenticated);
 
   // If hits a protected route and not authenticated, redirect to sign-in
-  if (isProtectedRoute(req)) {
+  if (isProtectedRoute(req) && !isWebhookRoute(req)) {
     auth().protect();
   }
 });

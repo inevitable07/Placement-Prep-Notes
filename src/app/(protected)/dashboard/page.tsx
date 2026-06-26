@@ -16,7 +16,7 @@ export default function DashboardPage() {
 
   // TODO: Replace with real dashboard in Module 03
   return (
-    <main className="min-h-screen bg-black text-white flex flex-col items-center justify-center">
+    <main className="min-h-screen bg-[#0B0B0F] text-white flex flex-col items-center justify-center">
       <h1>Dashboard — Welcome, {userId}</h1>
     </main>
   );

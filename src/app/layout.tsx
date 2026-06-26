@@ -28,11 +28,74 @@ export default function RootLayout({
     <ClerkProvider
       appearance={{
         variables: {
-          colorPrimary: "#6366f1",
-          colorBackground: "#000000",
-          colorText: "#ffffff",
-          colorInputBackground: "#0a0a0a",
-          colorInputText: "#ffffff",
+          colorPrimary: "#6366F1",
+          colorBackground: "#15161A",
+          colorText: "#F5F5F5",
+          colorTextSecondary: "#A1A1AA",
+          colorInputBackground: "#1B1C21",
+          colorInputText: "#F5F5F5",
+        },
+        elements: {
+          card: {
+            backgroundColor: "#15161A",
+            borderColor: "#26272D",
+            borderWidth: "1px",
+            borderStyle: "solid",
+            borderRadius: "16px",
+            boxShadow: "0 8px 30px rgba(0, 0, 0, 0.5)",
+          },
+          headerTitle: {
+            color: "#F5F5F5",
+          },
+          headerSubtitle: {
+            color: "#A1A1AA",
+          },
+          socialButtonsBlockButton: {
+            backgroundColor: "#1B1C21",
+            borderColor: "#26272D",
+            color: "#F5F5F5",
+            "&:hover": {
+              backgroundColor: "#26272D",
+            },
+          },
+          formButtonPrimary: {
+            backgroundColor: "#FFEBCC",
+            color: "#0B0B0F",
+            fontWeight: "600",
+            "&:hover": {
+              backgroundColor: "#E6D3B8",
+            },
+            "&:active": {
+              backgroundColor: "#D9C6AB",
+            },
+          },
+          formFieldInput: {
+            backgroundColor: "#1B1C21",
+            borderColor: "#26272D",
+            color: "#F5F5F5",
+            borderRadius: "8px",
+            "&:focus": {
+              borderColor: "#6366F1",
+            },
+          },
+          formFieldLabel: {
+            color: "#F5F5F5",
+          },
+          dividerLine: {
+            backgroundColor: "#26272D",
+          },
+          dividerText: {
+            color: "#A1A1AA",
+          },
+          footerActionText: {
+            color: "#A1A1AA",
+          },
+          footerActionLink: {
+            color: "#6366F1",
+            "&:hover": {
+              color: "#4f46e5",
+            },
+          },
         },
       }}
     >
