@@ -79,7 +79,19 @@ The root route `/` is managed server-side inside [page.tsx](file:///e:/placement
 
 ---
 
-## 6. Webhook Signature Verification
+## 6. MongoDB Connection Singleton (Module 02-A)
+The database connection singleton is initialized and managed inside [connection.ts](file:///e:/placementPrepAI/src/lib/db/connection.ts):
+- **Problem Solved**: Local hot-reloading in Next.js re-evaluates JS modules, which can create multiple connection pools that rapidly exhaust database resources.
+- **Cache Mechanism**: Mongoose connection references are stored in the NodeJS global scope as `global.mongooseConnection`. Subsequent calls immediately return the active connection promise instead of creating new instances.
+- **Type Safety**: The global typescript namespace is extended with a custom typed property while bypassing ESLint `no-var` constraints.
+- **Connection Flags**:
+  - `bufferCommands`: `false` (fails fast on query dispatch if the connection is absent, rather than infinite buffering).
+  - `dbName`: `"placement-prep-ai"` (targets database collection namespace).
+- **Telemetry Listeners**: Attaches log handles to record `connected`, `error`, and `disconnected` events.
+
+---
+
+## 7. Webhook Signature Verification
 The webhook handler is situated at [route.ts](file:///e:/placementPrepAI/src/app/api/webhooks/clerk/route.ts). It verifies the signatures sent with Clerk webhooks to secure the integration.
 
 - **Replay Attack Prevention**: Signature validation using `svix` is mandatory. It ensures that the request was genuinely signed by Clerk and has not been intercepted, modified, or replayed by malicious third parties.
@@ -90,7 +102,7 @@ The webhook handler is situated at [route.ts](file:///e:/placementPrepAI/src/app
 
 ---
 
-## 7. Authentication Helpers (`getAuthUser`)
+## 8. Authentication Helpers (`getAuthUser`)
 The canonical server authentication helper methods are exported in [getAuthUser.ts](file:///e:/placementPrepAI/src/lib/auth/getAuthUser.ts):
 
 - **`getAuthUser()`**: Retrieves the current Clerk `userId` and `sessionId`. Throws an `AuthError` (message: `'UNAUTHORIZED'`, code: `'UNAUTHORIZED'`) if the user is not signed in.
@@ -99,7 +111,7 @@ The canonical server authentication helper methods are exported in [getAuthUser.
 
 ---
 
-## 8. Developer Validation Endpoint
+## 9. Developer Validation Endpoint
 A local dev-only route is mounted at [route.ts](file:///e:/placementPrepAI/src/app/api/test-auth/route.ts) to verify auth configurations:
 
 - **Guard**: Retracts endpoint access in production environments (checks `process.env.NODE_ENV === 'production'` and returns a `404` status).
@@ -107,7 +119,7 @@ A local dev-only route is mounted at [route.ts](file:///e:/placementPrepAI/src/a
 
 ---
 
-## 9. Directory & File Structure
+## 10. Directory & File Structure
 The project folder hierarchy is organized as follows:
 
 ```
@@ -131,7 +143,7 @@ placement-prep-ai/
 │   │   ├── auth/
 │   │   │   └── getAuthUser.ts                    # Safely exported getAuthUser helpers
 │   │   └── db/
-│   │       └── connection.ts                     # MongoDB connection pool setup
+│   │       └── connection.ts                     # MongoDB Cached singleton connection manager
 │   └── middleware.ts                             # Clerk middleware route guarding
 ├── .env.local                                    # Local environment variables (ignored by Git)
 ├── .env.example                                  # Template environment keys (tracked by Git)
@@ -143,7 +155,7 @@ placement-prep-ai/
 
 ---
 
-## 10. Verification & Correctness
+## 11. Verification & Correctness
 The application's compilation and packaging:
 - `npx tsc --noEmit` runs with 0 errors.
 - `npm run build` generates the production bundle and compiles all routes (including API endpoints and catch-all routes) successfully.
