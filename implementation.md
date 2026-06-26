@@ -1,6 +1,6 @@
-# Placement Prep AI — Project Bootstrap & Authentication Foundation (Module 01)
+# Placement Prep AI — Project Bootstrap & Authentication Foundation (Module 01 & 02)
 
-This document explains the foundation setup, folder structure, Clerk authentication integration, and server-side components for the **Placement Prep AI** application.
+This document explains the technical configurations, design systems, routing structures, database connections, and model definitions for the **Placement Prep AI** application.
 
 ---
 
@@ -91,7 +91,52 @@ The database connection singleton is initialized and managed inside [connection.
 
 ---
 
-## 7. Webhook Signature Verification
+## 7. Mongoose Schemas & Database Models (Module 02-B)
+Mongoose schemas and TypeScript interfaces are housed under `src/lib/db/models/`. Next.js hot-reload model duplication errors are prevented by caching declarations via `mongoose.models.ModelName || mongoose.model(...)`.
+
+### A. User Model ([User.ts](file:///e:/placementPrepAI/src/lib/db/models/User.ts))
+- **Interface**: `IUser`, `UserDocument` type.
+- **Properties**: `clerkId` (string, required, unique), `email` (string, lowercase, required, unique), `plan` (enum: `"FREE" | "PRO" | "ADMIN"`), `totalNotes` (number), `streak` (number), `lastActive` (Date), and `preferences` (sub-document mapping skill levels and companies).
+- **Indexes**: Unique indexes on `clerkId` and `email`.
+
+### B. Note Model ([Note.ts](file:///e:/placementPrepAI/src/lib/db/models/Note.ts))
+- **Interface**: `INote`, `NoteDocument` type.
+- **Properties**: `topic` (min 2, max 100), `slug` (required, unique), `hash` (SHA256, required, unique), `content` (Mixed schema json payload), `status` (enum: `"generating" | "complete" | "failed"`), `domain` (enum: `"DSA" | "OS" | "Networks" | "Database" | "SystemDesign" | "WebDev" | "DevOps"`), `difficulty` (enum: `"Beginner" | "Intermediate" | "Advanced"`), `viewCount` (number), `source` (enum: `"ai" | "cache" | "database"`), and `generationMs` (number).
+- **Indexes**: Unique indexes on `hash` and `slug`; full-text search index on `topic`; compound index on `domain` and `status`.
+
+### C. History Model ([History.ts](file:///e:/placementPrepAI/src/lib/db/models/History.ts))
+- **Interface**: `IHistory`, `HistoryDocument` type.
+- **Properties**: `userId` (string, required), `topic` (string, required), `noteId` (ObjectId ref `"Note"`, required), `source` (enum: `"ai" | "cache" | "database"`), and `searchedAt` (Date).
+- **Indexes**: TTL index on `searchedAt` configured for 7776000 seconds (90 days auto-delete); compound query index on `userId` and `searchedAt`.
+
+### D. Bookmark Model ([Bookmark.ts](file:///e:/placementPrepAI/src/lib/db/models/Bookmark.ts))
+- **Interface**: `IBookmark`, `BookmarkDocument` type.
+- **Properties**: `userId` (string, required), `noteId` (ObjectId ref `"Note"`, required), and `folder` (string, default `"General"`).
+- **Indexes**: Unique compound index on `userId` and `noteId` to prevent duplicate bookmarks.
+
+### E. UserNote Model ([UserNote.ts](file:///e:/placementPrepAI/src/lib/db/models/UserNote.ts))
+- **Architecture**: Acts as a personalization junction table. AI-generated note contents are cached globally in the shared `Note` collection. User-specific highlights, annotations, progress metrics, rating reviews, and study telemetry are tracked separately inside `UserNote` to prevent content duplication and optimize read scales.
+- **Interface**: `IUserNote`, `UserNoteDocument` type.
+- **Properties**:
+  - `userId` (string, required)
+  - `noteId` (ObjectId ref `"Note"`, required)
+  - `savedAt` (Date)
+  - `lastViewed` (Date)
+  - `progress` (number, range 0 - 100)
+  - `revisionCount` (number, default `0`)
+  - `rating` (number, optional, range 1 - 5)
+  - `personalSummary` (string, default `""`)
+  - `highlights` (array of sub-documents matching `{ text, color: "yellow" | "green" | "blue" | "pink", createdAt }`)
+  - `customTags` (array of strings)
+  - `lastRevised` (Date, optional)
+  - `chatCount` (number, default `0`)
+  - `isArchived` (boolean, default `false`)
+  - `favorite` (boolean, default `false`)
+- **Indexes**: Unique compound index on `userId` and `noteId`; query index on `userId` for notes fetch.
+
+---
+
+## 8. Webhook Signature Verification
 The webhook handler is situated at [route.ts](file:///e:/placementPrepAI/src/app/api/webhooks/clerk/route.ts). It verifies the signatures sent with Clerk webhooks to secure the integration.
 
 - **Replay Attack Prevention**: Signature validation using `svix` is mandatory. It ensures that the request was genuinely signed by Clerk and has not been intercepted, modified, or replayed by malicious third parties.
@@ -102,7 +147,7 @@ The webhook handler is situated at [route.ts](file:///e:/placementPrepAI/src/app
 
 ---
 
-## 8. Authentication Helpers (`getAuthUser`)
+## 9. Authentication Helpers (`getAuthUser`)
 The canonical server authentication helper methods are exported in [getAuthUser.ts](file:///e:/placementPrepAI/src/lib/auth/getAuthUser.ts):
 
 - **`getAuthUser()`**: Retrieves the current Clerk `userId` and `sessionId`. Throws an `AuthError` (message: `'UNAUTHORIZED'`, code: `'UNAUTHORIZED'`) if the user is not signed in.
@@ -111,7 +156,7 @@ The canonical server authentication helper methods are exported in [getAuthUser.
 
 ---
 
-## 9. Developer Validation Endpoint
+## 10. Developer Validation Endpoint
 A local dev-only route is mounted at [route.ts](file:///e:/placementPrepAI/src/app/api/test-auth/route.ts) to verify auth configurations:
 
 - **Guard**: Retracts endpoint access in production environments (checks `process.env.NODE_ENV === 'production'` and returns a `404` status).
@@ -119,7 +164,7 @@ A local dev-only route is mounted at [route.ts](file:///e:/placementPrepAI/src/a
 
 ---
 
-## 10. Directory & File Structure
+## 11. Directory & File Structure
 The project folder hierarchy is organized as follows:
 
 ```
@@ -143,6 +188,12 @@ placement-prep-ai/
 │   │   ├── auth/
 │   │   │   └── getAuthUser.ts                    # Safely exported getAuthUser helpers
 │   │   └── db/
+│   │       ├── models/
+│   │       │   ├── User.ts                       # Mongoose model for User
+│   │       │   ├── Note.ts                       # Mongoose model for Note
+│   │       │   ├── History.ts                    # Mongoose model for History
+│   │       │   ├── Bookmark.ts                   # Mongoose model for Bookmark
+│   │       │   └── UserNote.ts                   # Mongoose model for UserNote with Personalization
 │   │       └── connection.ts                     # MongoDB Cached singleton connection manager
 │   └── middleware.ts                             # Clerk middleware route guarding
 ├── .env.local                                    # Local environment variables (ignored by Git)
@@ -155,7 +206,7 @@ placement-prep-ai/
 
 ---
 
-## 11. Verification & Correctness
+## 12. Verification & Correctness
 The application's compilation and packaging:
 - `npx tsc --noEmit` runs with 0 errors.
 - `npm run build` generates the production bundle and compiles all routes (including API endpoints and catch-all routes) successfully.
