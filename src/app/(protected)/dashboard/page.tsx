@@ -8,6 +8,7 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { getOrCreateDbUser } from "@/lib/auth/getAuthUser";
 import AppLayout from "@/components/layout/AppLayout";
+import DashboardClient from "./DashboardClient";
 
 export default async function DashboardPage() {
   const { userId } = auth();
@@ -32,13 +33,7 @@ export default async function DashboardPage() {
 
   return (
     <AppLayout>
-      {/* TODO: Render DashboardClient here (Prompt 03-B) */}
-      <div className="flex flex-col gap-4">
-        <h2 className="text-2xl font-bold tracking-tight text-[#e2e8f0]">Workspace Dashboard</h2>
-        <p className="text-[#64748b] text-sm">
-          Welcome to your workspace. Start preparing for placements by generating notes.
-        </p>
-      </div>
+      <DashboardClient />
     </AppLayout>
   );
 }

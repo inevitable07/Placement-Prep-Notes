@@ -6,23 +6,30 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { UserButton } from "@clerk/nextjs";
 import SidebarNav from "./SidebarNav";
+import { MOCK_NOTES } from "@/lib/mock/notes.mock";
+import SidebarCloseButton from "./SidebarCloseButton";
 
 export default async function Sidebar() {
   const user = await currentUser();
   const firstName = user?.firstName || "User";
 
+  // TODO: Replace MOCK_NOTES with NoteRepository.getRecentNotes()
+  // or API fetch in Module 04.
+  const recentNotes = MOCK_NOTES;
+
   return (
-    <aside className="hidden md:flex flex-col w-[240px] h-full bg-[#111111] border-r border-[#1f1f1f] flex-shrink-0 select-none">
+    <aside className="flex flex-col w-full h-full select-none">
       {/* Logo Branding Header Area */}
-      <div className="pt-6 px-5 pb-4">
+      <div className="pt-6 px-5 pb-4 flex items-center justify-between">
         <span className="text-xl font-bold tracking-tight text-[#e2e8f0]">
           PrepAI
         </span>
+        <SidebarCloseButton />
       </div>
       <div className="border-b border-[#1f1f1f] mx-5" />
 
       {/* Main Navigations List */}
-      <SidebarNav />
+      <SidebarNav recentNotes={recentNotes} />
 
       {/* User Session Info Footer Section */}
       <div className="mt-auto px-4 pb-6 flex flex-col gap-4">

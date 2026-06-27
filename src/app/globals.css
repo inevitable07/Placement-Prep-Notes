@@ -18,3 +18,106 @@ body {
     text-wrap: balance;
   }
 }
+
+/* Custom Scrollbars matching capsule styles (no arrow boxes, no backgrounds) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* Light Mode styling overrides targeting color-specific classes */
+[data-theme="light"] {
+  --background: #F3F4F4;
+  --foreground: #0f172a;
+}
+
+[data-theme="light"] .bg-\[\#0a0a0a\] {
+  background-color: #F3F4F4 !important;
+}
+
+[data-theme="light"] .bg-\[\#111111\] {
+  background-color: #ffffff !important;
+}
+
+[data-theme="light"] .bg-\[\#1a1a1a\] {
+  background-color: #e2e8f0 !important;
+}
+
+[data-theme="light"] .hover\:bg-\[\#1a1a1a\]:hover {
+  background-color: #e2e8f0 !important;
+}
+
+[data-theme="light"] .border-\[\#1f1f1f\] {
+  border-color: #e2e8f0 !important;
+}
+
+[data-theme="light"] .text-\[\#e2e8f0\] {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .text-\[\#64748b\] {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .text-\[\#64748b\/50\] {
+  color: rgba(71, 85, 105, 0.5) !important;
+}
+
+[data-theme="light"] .text-\[\#334155\] {
+  color: #94a3b8 !important;
+}
+
+/* Accent overlays adjustments for readability in light mode */
+[data-theme="light"] .bg-\[\#EC6530\]\/10 {
+  background-color: rgba(236, 101, 48, 0.12) !important;
+}
+
+[data-theme="light"] .bg-\[\#EC6530\]\/40 {
+  background-color: rgba(236, 101, 48, 0.45) !important;
+}
+
+[data-theme="light"] .bg-\[\#EC6530\] {
+  background-color: #EC6530 !important;
+}
+
+[data-theme="light"] .hover\:bg-\[\#d55220\]:hover {
+  background-color: #d55220 !important;
+}
+
+/* Circular ripple view-transition settings */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+@keyframes ripple-in {
+  from {
+    clip-path: circle(0px at var(--ripple-x) var(--ripple-y));
+  }
+  to {
+    clip-path: circle(var(--ripple-r) at var(--ripple-x) var(--ripple-y));
+  }
+}
+
+::view-transition-new(root) {
+  animation: 450ms cubic-bezier(0.4, 0, 0.2, 1) ripple-in;
+  z-index: 9999;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}

@@ -14,8 +14,13 @@ import {
   Download,
   Settings,
 } from "lucide-react";
+import { INotePreview } from "@/types/note.types";
 
-export default function SidebarNav() {
+interface SidebarNavProps {
+  recentNotes: INotePreview[];
+}
+
+export default function SidebarNav({ recentNotes }: SidebarNavProps) {
   const pathname = usePathname();
 
   const primaryNav = [
@@ -26,9 +31,9 @@ export default function SidebarNav() {
   ];
 
   return (
-    <div className="flex-1 flex flex-col gap-6 mt-6 px-3">
+    <div className="flex-1 flex flex-col gap-6 mt-6 px-3 overflow-hidden min-h-0">
       {/* Workspace Navigation Group */}
-      <div>
+      <div className="flex-shrink-0">
         <div className="px-3 mb-2 text-xs font-medium tracking-widest text-[#64748b] uppercase select-none">
           Workspace
         </div>
@@ -43,14 +48,14 @@ export default function SidebarNav() {
                 href={item.href}
                 className={`group flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium cursor-pointer transition-all duration-150 border-l-2 ${
                   isActive
-                    ? "bg-indigo-500/10 text-indigo-400 border-indigo-500"
+                    ? "bg-[#EC6530]/10 text-[#EC6530] border-[#EC6530]"
                     : "bg-transparent text-[#64748b] border-transparent hover:bg-[#1a1a1a] hover:text-[#e2e8f0]"
                 }`}
               >
                 <Icon
                   size={18}
                   className={`transition-colors duration-150 ${
-                    isActive ? "text-indigo-400" : "text-[#64748b] group-hover:text-[#e2e8f0]"
+                    isActive ? "text-[#EC6530]" : "text-[#64748b] group-hover:text-[#e2e8f0]"
                   }`}
                 />
                 <span>{item.name}</span>
@@ -60,8 +65,38 @@ export default function SidebarNav() {
         </nav>
       </div>
 
+      {/* Recent Notes History Group */}
+      <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+        <div className="px-3 mb-2 text-xs font-medium tracking-widest text-[#64748b] uppercase select-none">
+          Recent Notes
+        </div>
+        <div className="flex-1 overflow-y-auto flex flex-col gap-1 pr-1">
+          {recentNotes.map((note) => {
+            const href = `/dashboard/notes/${note.slug}`;
+            const isActive = pathname === href;
+
+            return (
+              <Link
+                key={note.slug}
+                href={href}
+                className={`flex items-center justify-between gap-2 px-3 py-1.5 rounded-lg text-sm transition-all duration-150 border-l-2 ${
+                  isActive
+                    ? "bg-[#EC6530]/10 text-[#EC6530] border-[#EC6530] font-medium"
+                    : "bg-transparent text-[#64748b] border-transparent hover:bg-[#1a1a1a] hover:text-[#e2e8f0] font-normal"
+                }`}
+              >
+                <span className="truncate flex-1 text-left">{note.topic}</span>
+                <span className="text-[9px] font-semibold tracking-wider text-[#64748b] bg-[#1a1a1a] border border-[#1f1f1f] px-1.5 py-0.5 rounded flex-shrink-0 select-none uppercase">
+                  {note.domain}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Account Navigation Group */}
-      <div>
+      <div className="flex-shrink-0">
         <div className="px-3 mb-2 text-xs font-medium tracking-widest text-[#64748b] uppercase select-none">
           Account
         </div>
