@@ -1,6 +1,6 @@
 # Placement Prep AI — Project Bootstrap & Authentication Foundation (Module 01 & 02)
 
-This document explains the technical configurations, design systems, routing structures, database connections, and model definitions for the **Placement Prep AI** application.
+This document explains the technical configurations, design systems, routing structures, database connections, model definitions, and repository layers for the **Placement Prep AI** application.
 
 ---
 
@@ -136,7 +136,52 @@ Mongoose schemas and TypeScript interfaces are housed under `src/lib/db/models/`
 
 ---
 
-## 8. Webhook Signature Verification
+## 8. AppError Class ([AppError.ts](file:///e:/placementPrepAI/src/lib/errors/AppError.ts))
+A customized error abstraction extends standard JavaScript `Error` parameters.
+- **Goal**: Standardizes error handling and hides raw database stack details (such as Mongoose internal error messages) from client or API callers.
+- **Properties**:
+  - `code`: Custom application-specific string code (e.g. `'DB_ERROR'`).
+  - `statusCode`: Integer matching target HTTP status code (e.g. `500` or `404`).
+
+---
+
+## 9. Repository Abstraction Layer (Module 02-C)
+Database calls from Next.js route endpoints must only transit through Repository static methods. Mongoose operations are shielded inside the repositories.
+
+- **Connection Resolving**: Every static repository method executes `await connectDB()` at entry.
+- **Error Wrapping**: Operations are wrapped inside `try/catch` handlers. Any caught exception is mapped and re-thrown as a typed `AppError`.
+- **Query Optimization**: For query reading methods that do not modify properties, Mongoose `.lean()` is applied to return raw, plain JSON objects.
+
+### A. UserRepository ([UserRepository.ts](file:///e:/placementPrepAI/src/lib/db/repositories/UserRepository.ts))
+- `findByClerkId(clerkId)`: Lean search.
+- `createUser(data)`: Creates a new user document with default configurations.
+- `updatePlan(clerkId, plan)`: Updates subscription tiers (`"FREE" | "PRO" | "ADMIN"`).
+- `incrementNoteCount(clerkId)`: Increments note counter by 1.
+- `upsertFromWebhook(clerkId, email)`: Webhook helper to insert or update user profiles.
+
+### B. NoteRepository ([NoteRepository.ts](file:///e:/placementPrepAI/src/lib/db/repositories/NoteRepository.ts))
+- `findByHash(hash)`: Lean search. Used for deduplication.
+- `findById(noteId)`: Lean search.
+- `findBySlug(slug)`: Lean search.
+- `createNote(data)`: Saves Note details.
+- `upsertByHash(hash, data)`: Returns `{ note, isNew }` mapping newly-made entries.
+- `incrementViewCount(noteId)`: Increments note views.
+- `findRecentNotes(limit)`: Retrieves notes sorted by creation descending (default limit 10).
+
+### C. HistoryRepository ([HistoryRepository.ts](file:///e:/placementPrepAI/src/lib/db/repositories/HistoryRepository.ts))
+- `addEntry(data)`: Logs query records.
+- `getRecentHistory(userId, limit, skip)`: Paginated lean history listings (default limit 20).
+- `getHistoryCount(userId)`: Counts total entries.
+
+### D. BookmarkRepository ([BookmarkRepository.ts](file:///e:/placementPrepAI/src/lib/db/repositories/BookmarkRepository.ts))
+- `addBookmark(userId, noteId, folder)`: Saves a bookmark item.
+- `removeBookmark(userId, noteId)`: Deletes a bookmark.
+- `isBookmarked(userId, noteId)`: Returns boolean matching bookmark presence.
+- `getUserBookmarks(userId)`: Lean list of user bookmarks.
+
+---
+
+## 10. Webhook Signature Verification
 The webhook handler is situated at [route.ts](file:///e:/placementPrepAI/src/app/api/webhooks/clerk/route.ts). It verifies the signatures sent with Clerk webhooks to secure the integration.
 
 - **Replay Attack Prevention**: Signature validation using `svix` is mandatory. It ensures that the request was genuinely signed by Clerk and has not been intercepted, modified, or replayed by malicious third parties.
@@ -147,7 +192,7 @@ The webhook handler is situated at [route.ts](file:///e:/placementPrepAI/src/app
 
 ---
 
-## 9. Authentication Helpers (`getAuthUser`)
+## 11. Authentication Helpers (`getAuthUser`)
 The canonical server authentication helper methods are exported in [getAuthUser.ts](file:///e:/placementPrepAI/src/lib/auth/getAuthUser.ts):
 
 - **`getAuthUser()`**: Retrieves the current Clerk `userId` and `sessionId`. Throws an `AuthError` (message: `'UNAUTHORIZED'`, code: `'UNAUTHORIZED'`) if the user is not signed in.
@@ -156,7 +201,7 @@ The canonical server authentication helper methods are exported in [getAuthUser.
 
 ---
 
-## 10. Developer Validation Endpoint
+## 12. Developer Validation Endpoint
 A local dev-only route is mounted at [route.ts](file:///e:/placementPrepAI/src/app/api/test-auth/route.ts) to verify auth configurations:
 
 - **Guard**: Retracts endpoint access in production environments (checks `process.env.NODE_ENV === 'production'` and returns a `404` status).
@@ -164,7 +209,7 @@ A local dev-only route is mounted at [route.ts](file:///e:/placementPrepAI/src/a
 
 ---
 
-## 11. Directory & File Structure
+## 13. Directory & File Structure
 The project folder hierarchy is organized as follows:
 
 ```
@@ -187,6 +232,8 @@ placement-prep-ai/
 │   ├── lib/
 │   │   ├── auth/
 │   │   │   └── getAuthUser.ts                    # Safely exported getAuthUser helpers
+│   │   ├── errors/
+│   │   │   └── AppError.ts                       # Standardized application AppError wrapping class
 │   │   └── db/
 │   │       ├── models/
 │   │       │   ├── User.ts                       # Mongoose model for User
@@ -194,6 +241,11 @@ placement-prep-ai/
 │   │       │   ├── History.ts                    # Mongoose model for History
 │   │       │   ├── Bookmark.ts                   # Mongoose model for Bookmark
 │   │       │   └── UserNote.ts                   # Mongoose model for UserNote with Personalization
+│   │       ├── repositories/
+│   │       │   ├── UserRepository.ts             # Static repositories mapping User queries
+│   │       │   ├── NoteRepository.ts             # Static repositories mapping Note queries
+│   │       │   ├── HistoryRepository.ts          # Static repositories mapping History queries
+│   │       │   └── BookmarkRepository.ts         # Static repositories mapping Bookmark queries
 │   │       └── connection.ts                     # MongoDB Cached singleton connection manager
 │   └── middleware.ts                             # Clerk middleware route guarding
 ├── .env.local                                    # Local environment variables (ignored by Git)
@@ -206,7 +258,7 @@ placement-prep-ai/
 
 ---
 
-## 12. Verification & Correctness
+## 14. Verification & Correctness
 The application's compilation and packaging:
 - `npx tsc --noEmit` runs with 0 errors.
 - `npm run build` generates the production bundle and compiles all routes (including API endpoints and catch-all routes) successfully.
