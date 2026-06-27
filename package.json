@@ -12,6 +12,7 @@
     "@clerk/nextjs": "^5.7.6",
     "@google/generative-ai": "^0.24.1",
     "@upstash/redis": "^1.38.0",
+    "lucide-react": "^1.21.0",
     "mongoose": "^9.7.3",
     "next": "14.2.35",
     "react": "^18",
