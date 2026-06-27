@@ -7,6 +7,7 @@
 import { Webhook } from "svix";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
+import { UserRepository } from "@/lib/db/repositories/UserRepository";
 
 // Define TypeScript interfaces for Clerk Event payloads to avoid 'any'
 interface EmailAddress {
@@ -91,29 +92,39 @@ export async function POST(request: Request) {
 
     if (eventType === "user.created") {
       const data = evt.data as UserCreatedEventData;
-      const { id, email_addresses, created_at } = data;
+      const { id, email_addresses } = data;
       const primaryEmail = email_addresses[0]?.email_address || "";
 
-      // Stub representation of MongoDB user document (Database layer integrated in Module 02)
-      const mongodbUserStub = {
-        clerkId: id,
-        email: primaryEmail,
-        createdAt: new Date(created_at),
-        role: "FREE", // Default role
-      };
+      if (!id || !primaryEmail) {
+        return NextResponse.json(
+          { error: "Error: Missing required Clerk user fields" },
+          { status: 400 }
+        );
+      }
 
-      console.log("[Webhook] Prepared MongoDB user stub:", mongodbUserStub);
-      return NextResponse.json(
-        { message: "User creation processed successfully", user: mongodbUserStub },
-        { status: 200 }
-      );
+      try {
+        await UserRepository.upsertFromWebhook(id, primaryEmail);
+        console.log("[Webhook] User synced to MongoDB:", id);
+        return NextResponse.json(
+          { success: true, userId: id },
+          { status: 200 }
+        );
+      } catch (dbErr) {
+        // Log details internally but return 500 with a safe message (mask raw Mongoose messages)
+        console.error("[Webhook] Failed to sync user to MongoDB:", dbErr);
+        return NextResponse.json(
+          { error: "Internal Server Error: Database synchronization failed." },
+          { status: 500 }
+        );
+      }
     }
 
     if (eventType === "user.deleted") {
       const data = evt.data as { id: string };
       console.log(`[Webhook] User deleted: ${data.id}`);
+      // For now: do NOT delete from MongoDB (preserve history data)
       return NextResponse.json(
-        { message: "User deletion logged successfully", id: data.id },
+        { success: true, message: "User deletion logged (document preserved)" },
         { status: 200 }
       );
     }

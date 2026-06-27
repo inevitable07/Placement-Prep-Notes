@@ -5,6 +5,8 @@
  */
 
 import { auth } from "@clerk/nextjs/server";
+import { UserRepository } from "@/lib/db/repositories/UserRepository";
+import { UserDocument } from "@/lib/db/models/User";
 
 /**
  * Custom authentication error structure with a code property.
@@ -70,4 +72,23 @@ export async function getOptionalAuthUser(): Promise<AuthenticatedUser | null> {
   }
 
   return { userId, sessionId };
+}
+
+/**
+ * Retrieves the database user associated with the given Clerk ID,
+ * or creates it if it does not exist (upsert). This ensures that
+ * when a user first hits a dashboard, they have a fully synced document
+ * in MongoDB even if the webhook transaction has not finished processing.
+ * 
+ * @param {string} clerkId - The Clerk user identifier.
+ * @param {string} email - The user's primary email address.
+ * @returns {Promise<UserDocument>} The upserted MongoDB user document.
+ * @throws {AppError} If a database exception occurs.
+ * 
+ * @example
+ * // In a Server Component (e.g., Dashboard page):
+ * const dbUser = await getOrCreateDbUser(userId, emailAddress);
+ */
+export async function getOrCreateDbUser(clerkId: string, email: string): Promise<UserDocument> {
+  return UserRepository.upsertFromWebhook(clerkId, email);
 }

@@ -1,6 +1,6 @@
 # Placement Prep AI — Project Bootstrap & Authentication Foundation (Module 01 & 02)
 
-This document explains the technical configurations, design systems, routing structures, database connections, model definitions, and repository layers for the **Placement Prep AI** application.
+This document explains the technical configurations, design systems, routing structures, database connections, model definitions, repository layers, and webhook integrations for the **Placement Prep AI** application.
 
 ---
 
@@ -181,14 +181,14 @@ Database calls from Next.js route endpoints must only transit through Repository
 
 ---
 
-## 10. Webhook Signature Verification
-The webhook handler is situated at [route.ts](file:///e:/placementPrepAI/src/app/api/webhooks/clerk/route.ts). It verifies the signatures sent with Clerk webhooks to secure the integration.
+## 10. Webhook & Database Synchronization (Module 02-D)
+Binds Clerk authentication actions directly to Mongoose database updates:
 
-- **Replay Attack Prevention**: Signature validation using `svix` is mandatory. It ensures that the request was genuinely signed by Clerk and has not been intercepted, modified, or replayed by malicious third parties.
-- **Event Handlers**:
-  - `user.created`: Extracts user metadata (`id`, `primary email`, and `created_at` timestamp) to construct a MongoDB user document stub for future persistence.
-  - `user.deleted`: Logs deletion telemetry to record user removals.
-- **Error Handling**: The route is fully wrapped in error handlers returning a `400` status with descriptive error responses if validation fails, preventing generic `500` server errors.
+- **Clerk Webhook route ([route.ts](file:///e:/placementPrepAI/src/app/api/webhooks/clerk/route.ts))**:
+  - `user.created`: Extracts Clerk ID and email coordinates, calling `UserRepository.upsertFromWebhook` to sync records to MongoDB. Database failures are caught and logged, returning an HTTP `500` with a secure, masked message.
+  - `user.deleted`: Logs deletions without removing documents, protecting user study histories.
+- **Fallback User Sync Helper ([getAuthUser.ts](file:///e:/placementPrepAI/src/lib/auth/getAuthUser.ts))**:
+  - `getOrCreateDbUser(clerkId, email)`: A static resolver called upon initial dashboard load. Instantiates user profiles inside MongoDB if webhook logs are delayed.
 
 ---
 
@@ -225,13 +225,13 @@ placement-prep-ai/
 │   │   │   ├── test-auth/
 │   │   │   │   └── route.ts                      # Developer Auth Validation route
 │   │   │   └── webhooks/
-│   │   │       └── clerk/route.ts                # Verified Webhook handler (Svix)
+│   │   │       └── clerk/route.ts                # Verified Webhook handler syncing to DB
 │   │   ├── globals.css                           # Global styling and Inter font configuration
 │   │   ├── layout.tsx                            # Root Layout file with custom Clerk appearance
 │   │   └── page.tsx                              # Authentication-first Server gateway page
 │   ├── lib/
 │   │   ├── auth/
-│   │   │   └── getAuthUser.ts                    # Safely exported getAuthUser helpers
+│   │   │   └── getAuthUser.ts                    # Safely exported getAuthUser & getOrCreateDbUser helpers
 │   │   ├── errors/
 │   │   │   └── AppError.ts                       # Standardized application AppError wrapping class
 │   │   └── db/
