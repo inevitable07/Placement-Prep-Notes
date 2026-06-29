@@ -118,7 +118,7 @@ export class NoteRepository {
       if (existing) {
         // Exists, perform update
         const updated = await Note.findOneAndUpdate({ hash }, data, {
-          new: true,
+          returnDocument: "after",
           runValidators: true,
         });
         if (!updated) {

@@ -79,7 +79,7 @@ export class UserRepository {
       const user = await User.findOneAndUpdate(
         { clerkId },
         { plan },
-        { new: true, runValidators: true }
+        { returnDocument: "after", runValidators: true }
       );
       return user;
     } catch (err) {
@@ -140,7 +140,7 @@ export class UserRepository {
           },
           email,
         },
-        { upsert: true, new: true, runValidators: true }
+        { upsert: true, returnDocument: "after", runValidators: true }
       );
       return user;
     } catch (err) {
