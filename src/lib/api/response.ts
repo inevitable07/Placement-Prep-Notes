@@ -10,6 +10,7 @@ export type ApiMeta = {
   generationMs: number;
   cached: boolean;
   requestId: string;
+  cacheStatus?: "HIT" | "MISS";
 };
 
 export type ApiResponse<T> = {
