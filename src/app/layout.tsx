@@ -7,6 +7,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
+import { WorkspaceProvider } from "@/context/WorkspaceContext";
 import "./globals.css";
 
 const inter = Inter({
@@ -101,7 +102,9 @@ export default function RootLayout({
     >
       <html lang="en" className={inter.variable}>
         <body className="antialiased">
-          {children}
+          <WorkspaceProvider>
+            {children}
+          </WorkspaceProvider>
         </body>
       </html>
     </ClerkProvider>

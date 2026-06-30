@@ -14,17 +14,14 @@ import {
   Download,
   Settings,
 } from "lucide-react";
-import { INotePreview } from "@/types/note.types";
+import { useWorkspace } from "@/context/WorkspaceContext";
 
-interface SidebarNavProps {
-  recentNotes: INotePreview[];
-}
-
-export default function SidebarNav({ recentNotes }: SidebarNavProps) {
+export default function SidebarNav() {
   const pathname = usePathname();
+  const { recentNotes, activeNote, selectNoteFromHistory, resetWorkspace } = useWorkspace();
 
   const primaryNav = [
-    { name: "New Note", href: "/dashboard", icon: PenLine },
+    { name: "New Note", href: "/dashboard", icon: PenLine, onClick: (e: React.MouseEvent) => { e.preventDefault(); resetWorkspace(); } },
     { name: "My Notes", href: "/dashboard/notes", icon: FileText },
     { name: "Bookmarks", href: "/dashboard/bookmarks", icon: Bookmark },
     { name: "Export", href: "/dashboard/export", icon: Download },
@@ -40,12 +37,13 @@ export default function SidebarNav({ recentNotes }: SidebarNavProps) {
         <nav className="flex flex-col gap-1">
           {primaryNav.map((item) => {
             const Icon = item.icon;
-            const isActive = pathname === item.href;
+            const isActive = pathname === item.href && !activeNote;
 
             return (
               <Link
-                key={item.href}
+                key={item.name}
                 href={item.href}
+                onClick={item.onClick}
                 className={`group flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium cursor-pointer transition-all duration-150 border-l-2 ${
                   isActive
                     ? "bg-[#EC6530]/10 text-[#EC6530] border-[#EC6530]"
@@ -72,14 +70,13 @@ export default function SidebarNav({ recentNotes }: SidebarNavProps) {
         </div>
         <div className="flex-1 overflow-y-auto flex flex-col gap-1 pr-1">
           {recentNotes.map((note) => {
-            const href = `/dashboard/notes/${note.slug}`;
-            const isActive = pathname === href;
+            const isActive = activeNote?.noteId === note.id;
 
             return (
-              <Link
+              <button
                 key={note.slug}
-                href={href}
-                className={`flex items-center justify-between gap-2 px-3 py-1.5 rounded-lg text-sm transition-all duration-150 border-l-2 ${
+                onClick={() => note.id && selectNoteFromHistory(note.id)}
+                className={`flex items-center justify-between gap-2 px-3 py-1.5 rounded-lg text-sm transition-all duration-150 border-l-2 w-full text-left cursor-pointer focus:outline-none ${
                   isActive
                     ? "bg-[#EC6530]/10 text-[#EC6530] border-[#EC6530] font-medium"
                     : "bg-transparent text-[#64748b] border-transparent hover:bg-[#1a1a1a] hover:text-[#e2e8f0] font-normal"
@@ -89,7 +86,7 @@ export default function SidebarNav({ recentNotes }: SidebarNavProps) {
                 <span className="text-[9px] font-semibold tracking-wider text-[#64748b] bg-[#1a1a1a] border border-[#1f1f1f] px-1.5 py-0.5 rounded flex-shrink-0 select-none uppercase">
                   {note.domain}
                 </span>
-              </Link>
+              </button>
             );
           })}
         </div>

@@ -20,6 +20,7 @@
 
 import { withAuth } from "@/lib/api/middleware";
 import { NoteService } from "@/lib/services/NoteService";
+import { BookmarkRepository } from "@/lib/db/repositories/BookmarkRepository";
 import { successResponse, errorResponse } from "@/lib/api/response";
 import { AppError } from "@/lib/errors/AppError";
 
@@ -33,7 +34,7 @@ export async function GET(
 
   try {
     // 1. Authorize lookup
-    await withAuth(request);
+    const { userId } = await withAuth(request);
 
     // 2. Fetch parameter id
     const { id } = params;
@@ -41,7 +42,10 @@ export async function GET(
     // 3. Delegate lookup to NoteService (validates format internally)
     const note = await NoteService.getNoteById(id);
 
-    // 4. Map MongoDB document to a clean client-safe payload shape
+    // 4. Check user-specific bookmark status
+    const isBookmarked = await BookmarkRepository.isBookmarked(userId, id);
+
+    // 5. Map MongoDB document to a clean client-safe payload shape
     const safeNotePayload = {
       id: note._id.toString(),
       topic: note.topic,
@@ -51,6 +55,7 @@ export async function GET(
       content: note.content,
       status: note.status,
       viewCount: note.viewCount,
+      isBookmarked,
       createdAt: note.createdAt,
     };
 

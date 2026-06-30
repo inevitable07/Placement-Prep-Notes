@@ -63,6 +63,7 @@ export class HistoryRepository {
         .sort({ searchedAt: -1 })
         .skip(skip)
         .limit(limit)
+        .populate("noteId")
         .lean();
       return logs as unknown as HistoryDocument[];
     } catch (err) {

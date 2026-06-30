@@ -6,6 +6,7 @@
 import { NoteRepository } from "@/lib/db/repositories/NoteRepository";
 import { HistoryRepository } from "@/lib/db/repositories/HistoryRepository";
 import { UserRepository } from "@/lib/db/repositories/UserRepository";
+import { BookmarkRepository } from "@/lib/db/repositories/BookmarkRepository";
 import { normalizeTopic, generateTopicHash } from "@/lib/api/schemas";
 import { generateSlug, detectDomain, isValidObjectId } from "@/lib/utils/helpers";
 import { STUB_NOTE_CONTENT } from "@/lib/mock/stubNote";
@@ -33,10 +34,12 @@ export class NoteService {
     // 1. Redis cache lookup (stub)
     const cached = await getCachedNote(hash);
     if (cached) {
+      const isBookmarked = await BookmarkRepository.isBookmarked(userId, cached._id.toString());
       return {
         noteId: cached._id.toString(),
         note: cached.content,
         isNew: false,
+        isBookmarked,
         source: "cache" as const,
         cacheStatus: "HIT" as const,
         preview: {
@@ -67,10 +70,13 @@ export class NoteService {
         source: "database",
       });
 
+      const isBookmarked = await BookmarkRepository.isBookmarked(userId, existing._id.toString());
+
       return {
         noteId: existing._id.toString(),
         note: existing.content,
         isNew: false,
+        isBookmarked,
         source: "database" as const,
         cacheStatus: "MISS" as const,
         preview: {
@@ -119,6 +125,7 @@ export class NoteService {
       noteId: note._id.toString(),
       note: STUB_NOTE_CONTENT,
       isNew: true,
+      isBookmarked: false,
       source: "ai" as const,
       cacheStatus: "MISS" as const,
       preview: {
