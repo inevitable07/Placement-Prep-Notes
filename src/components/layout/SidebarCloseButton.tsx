@@ -16,7 +16,7 @@ export default function SidebarCloseButton() {
   return (
     <button
       onClick={handleCollapse}
-      className="p-2 rounded-lg border border-[#1f1f1f] bg-[#111111] hover:bg-[#1a1a1a] text-[#64748b] hover:text-[#e2e8f0] transition-all duration-150 cursor-pointer flex items-center justify-center focus:outline-none"
+      className="p-2 rounded-lg border border-border bg-panel hover:bg-hover text-muted hover:text-foreground transition-all duration-150 cursor-pointer flex items-center justify-center focus:outline-none"
       aria-label="Collapse Sidebar"
     >
       <PanelLeftClose size={16} />

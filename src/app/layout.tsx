@@ -97,6 +97,30 @@ export default function RootLayout({
               color: "#4f46e5",
             },
           },
+          userButtonPopoverCard: {
+            backgroundColor: "#15161A",
+            borderColor: "#26272D",
+            borderWidth: "1px",
+            borderStyle: "solid",
+          },
+          userButtonPopoverActionButton: {
+            color: "#F5F5F5",
+            "&:hover": {
+              backgroundColor: "#1B1C21",
+            },
+          },
+          userButtonPopoverActionButtonText: {
+            color: "#F5F5F5",
+          },
+          userButtonPopoverActionButtonIcon: {
+            color: "#A1A1AA",
+          },
+          userButtonPopoverCustomItemButton: {
+            color: "#F5F5F5",
+            "&:hover": {
+              backgroundColor: "#1B1C21",
+            },
+          },
         },
       }}
     >

@@ -11,6 +11,12 @@ const config: Config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        panel: "var(--panel-bg)",
+        secondary: "var(--secondary-bg)",
+        border: "var(--border)",
+        muted: "var(--text-muted)",
+        hover: "var(--hover-bg)",
+        code: "var(--code-bg)",
       },
     },
   },

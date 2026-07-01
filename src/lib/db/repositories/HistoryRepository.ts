@@ -6,6 +6,7 @@
 
 import connectDB from "../connection";
 import History, { HistoryDocument, HistorySource } from "../models/History";
+import "../models/Note";
 import { AppError } from "../../errors/AppError";
 
 /**

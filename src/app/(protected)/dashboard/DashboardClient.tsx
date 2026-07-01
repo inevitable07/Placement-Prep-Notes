@@ -41,7 +41,7 @@ export default function DashboardClient() {
   return (
     <div className="w-full max-w-4xl mx-auto flex flex-col gap-8 select-none animate-fade-in">
       {/* Composer Container pinned at the top */}
-      <div className="w-full bg-[#0a0a0a]/80 backdrop-blur sticky top-0 py-2 z-40 border-b border-[#1f1f1f]/50">
+      <div className="w-full bg-secondary/80 backdrop-blur sticky top-0 py-2 z-40 border-b border-border/50">
         <Composer onGenerate={handleGenerate} isLoading={isLoading} />
       </div>
 

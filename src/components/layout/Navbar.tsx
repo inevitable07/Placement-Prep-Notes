@@ -17,13 +17,13 @@ export default function Navbar() {
   };
 
   return (
-    <header className="flex md:hidden items-center justify-between px-4 h-[56px] bg-[#0a0a0a] border-b border-[#1f1f1f] w-full flex-shrink-0 select-none">
-      <span className="text-xl font-bold tracking-tight text-[#e2e8f0]">
+    <header className="flex md:hidden items-center justify-between px-4 h-[56px] bg-secondary border-b border-border w-full flex-shrink-0 select-none">
+      <span className="text-xl font-bold tracking-tight text-foreground">
         PrepAI
       </span>
       <button
         onClick={toggleDrawer}
-        className="text-[#64748b] hover:text-[#e2e8f0] transition-colors focus:outline-none cursor-pointer"
+        className="text-muted hover:text-foreground transition-colors focus:outline-none cursor-pointer"
         aria-label="Toggle navigation menu"
       >
         {isOpen ? <X size={24} /> : <Menu size={24} />}

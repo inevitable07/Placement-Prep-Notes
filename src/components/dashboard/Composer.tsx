@@ -65,7 +65,7 @@ export default function Composer({ onGenerate, isLoading = false }: ComposerProp
       <div
         role="search"
         aria-label="Generate notes for a topic"
-        className="w-full bg-[#111111] border border-[#1f1f1f] rounded-2xl px-6 py-4 transition-all duration-200 focus-within:border-[#EC6530] flex flex-col"
+        className="w-full bg-panel border border-border rounded-2xl px-6 py-4 transition-all duration-200 focus-within:border-[#EC6530] flex flex-col"
       >
         {/* Input Textarea Area */}
         <textarea
@@ -77,7 +77,7 @@ export default function Composer({ onGenerate, isLoading = false }: ComposerProp
           placeholder="Ask about Docker, System Design, Binary Trees..."
           disabled={isLoading}
           aria-label="Topic to generate notes for"
-          className="w-full bg-transparent border-none outline-none focus:ring-0 resize-none text-[#e2e8f0] text-base font-normal placeholder-[#64748b] leading-relaxed p-0"
+          className="w-full bg-transparent border-none outline-none focus:ring-0 resize-none text-foreground text-base font-normal placeholder-muted leading-relaxed p-0"
           style={{ maxHeight: "120px" }}
         />
 
@@ -108,7 +108,7 @@ export default function Composer({ onGenerate, isLoading = false }: ComposerProp
                 </>
               )}
             </button>
-            <span className="text-[10px] text-[#334155] select-none font-medium">
+            <span className="text-[10px] text-muted/60 select-none font-medium">
               Press Enter to generate
             </span>
           </div>

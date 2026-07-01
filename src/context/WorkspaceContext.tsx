@@ -28,6 +28,7 @@ export interface WorkspaceContextType {
   activeNote: ActiveNote | null;
   recentNotes: INotePreview[];
   isLoading: boolean;
+  isHistoryLoading: boolean;
   error: string | null;
   currentTopic: string;
   requestId: string | null;
@@ -49,6 +50,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   const [activeNote, setActiveNote] = useState<ActiveNote | null>(null);
   const [recentNotes, setRecentNotes] = useState<INotePreview[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isHistoryLoading, setIsHistoryLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentTopic, setCurrentTopic] = useState("");
   const [requestId, setRequestId] = useState<string | null>(null);
@@ -60,23 +62,36 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
    * Fetch recent search history logs and map them to preview schema shapes.
    */
   const fetchHistory = async () => {
+    setIsHistoryLoading(true);
     try {
-      const res = await getHistory(6);
-      const mapped: INotePreview[] = res.data.items.map((item) => {
-        const note = item.noteId as unknown as { _id: string; slug: string; domain: NoteDomain; difficulty: NoteDifficulty; status: NoteStatus }; // Populated note ref object
-        return {
-          id: note?._id || item.noteId,
-          topic: item.topic,
-          slug: note?.slug || item.topic.toLowerCase().replace(/ /g, "-"),
-          domain: (note?.domain as NoteDomain) || "WebDev",
-          difficulty: (note?.difficulty as NoteDifficulty) || "Intermediate",
-          status: (note?.status as NoteStatus) || "complete",
-          createdAt: item.searchedAt,
-        };
-      });
-      setRecentNotes(mapped);
+      const res = await getHistory(20);
+      const seen = new Set<string>();
+      const uniqueMapped: INotePreview[] = [];
+
+      for (const item of res.data.items) {
+        const note = item.noteId as unknown as { _id: string; slug: string; domain: NoteDomain; difficulty: NoteDifficulty; status: NoteStatus };
+        const id = note?._id || item.noteId;
+        const slug = note?.slug || item.topic.toLowerCase().replace(/ /g, "-");
+        
+        if (!seen.has(slug)) {
+          seen.add(slug);
+          uniqueMapped.push({
+            id,
+            topic: item.topic,
+            slug,
+            domain: (note?.domain as NoteDomain) || "WebDev",
+            difficulty: (note?.difficulty as NoteDifficulty) || "Intermediate",
+            status: (note?.status as NoteStatus) || "complete",
+            createdAt: item.searchedAt,
+          });
+        }
+      }
+
+      setRecentNotes(uniqueMapped.slice(0, 6));
     } catch (err) {
       console.error("[WorkspaceContext] Failed to fetch initial history:", err);
+    } finally {
+      setIsHistoryLoading(false);
     }
   };
 
@@ -245,6 +260,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
         generationMs,
         cacheStatus,
         source,
+        isHistoryLoading,
         generateNewNote,
         selectNoteFromHistory,
         toggleActiveBookmark,

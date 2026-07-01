@@ -21,12 +21,12 @@ export default function WelcomeSection({ children }: WelcomeSectionProps) {
   return (
     <section className="flex flex-col items-center justify-center min-h-[60vh] max-w-3xl mx-auto text-center px-4 select-none">
       {/* Primary Accessible Page Heading */}
-      <h1 className="text-3xl md:text-4xl font-semibold text-[#e2e8f0] tracking-tight leading-tight">
+      <h1 className="text-3xl md:text-4xl font-semibold text-foreground tracking-tight leading-tight">
         {greeting}
       </h1>
 
       {/* Subtitle explanatory caption */}
-      <p className="text-base font-normal text-[#64748b] mt-3">
+      <p className="text-base font-normal text-muted mt-3">
         Search any topic to generate interview-ready notes instantly.
       </p>
 
@@ -36,8 +36,8 @@ export default function WelcomeSection({ children }: WelcomeSectionProps) {
       </div>
 
       {/* Subtle Gemini branding credentials */}
-      <div className="flex items-center gap-1.5 mt-4 text-[#64748b]">
-        <Zap size={12} className="text-[#64748b]" />
+      <div className="flex items-center gap-1.5 mt-4 text-muted">
+        <Zap size={12} className="text-muted" />
         <span className="text-xs font-medium">Powered by Gemini</span>
       </div>
     </section>
